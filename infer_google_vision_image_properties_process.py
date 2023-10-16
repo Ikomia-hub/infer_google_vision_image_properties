@@ -4,7 +4,6 @@ from google.cloud import vision
 import os
 import io
 import cv2
-
 from PIL import Image, ImageDraw
 import numpy as np
 
@@ -45,6 +44,8 @@ class InferGoogleVisionImageProperties(dataprocess.C2dImageTask):
         # Add input/output of the algorithm here
         self.add_output(dataprocess.DataDictIO())
         self.add_output(dataprocess.CObjectDetectionIO())
+        self.add_output(dataprocess.CImageIO())
+
 
         # Create parameters object
         if param is None:
@@ -73,6 +74,8 @@ class InferGoogleVisionImageProperties(dataprocess.C2dImageTask):
         # Set output
         output_dict = self.get_output(1)
         output_box = self.get_output(2)
+        self.forward_input_image(0, 3)
+        output_box.init('img', 3)
 
         # Get parameters
         param = self.get_param_object()
@@ -140,7 +143,6 @@ class InferGoogleVisionImageProperties(dataprocess.C2dImageTask):
         h = vertices[2][0] - y_box
 
         # Add selected area graphics to output
-        self.forward_input_image(0, 2)
         output_box.add_object(0, 'selected area', 1.0, float(x_box), float(y_box), float(w), float(h), self.color)
 
         # Step progress bar (Ikomia Studio):
