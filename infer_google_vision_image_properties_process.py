@@ -43,10 +43,8 @@ class InferGoogleVisionImageProperties(dataprocess.C2dImageTask):
     def __init__(self, name, param):
         dataprocess.C2dImageTask.__init__(self, name)
         # Add input/output of the algorithm here
-        # Example :  self.add_input(dataprocess.CImageIO())
-        #           self.add_output(dataprocess.CImageIO())
-
         self.add_output(dataprocess.DataDictIO())
+        self.add_output(dataprocess.CObjectDetectionIO())
 
         # Create parameters object
         if param is None:
@@ -55,8 +53,9 @@ class InferGoogleVisionImageProperties(dataprocess.C2dImageTask):
             self.set_param_object(copy.deepcopy(param))
 
         self.client = None
-
-
+        self.color = [0, 255, 255]
+        self.total_width = 1200
+        self.image_height = 800
 
     def get_progress_steps(self):
         # Function returning the number of progress steps for this algorithm
@@ -73,6 +72,7 @@ class InferGoogleVisionImageProperties(dataprocess.C2dImageTask):
 
         # Set output
         output_dict = self.get_output(1)
+        output_box = self.get_output(2)
 
         # Get parameters
         param = self.get_param_object()
@@ -98,15 +98,12 @@ class InferGoogleVisionImageProperties(dataprocess.C2dImageTask):
         response = self.client.image_properties(image=image)
         props  = response.image_properties_annotation
         color_data = props.dominant_colors.colors
-        print(response)
+
         # Create a blank image
-        # total_width = sum(int(entry.pixel_fraction * 400) for entry in color_data)
-        total_width = 1200
-        image_height = 800
-        image = Image.new("RGB", (total_width, image_height))
+        image = Image.new("RGB", (self.total_width, self.image_height))
         draw = ImageDraw.Draw(image)
 
-        # The total pixel_fraction is not always 1. So it will be normalize to 1
+        # The total pixel_fraction is not always 1. So it will be normalize
         pixel_fraction_total = sum(entry.pixel_fraction for entry in color_data)
 
         # Draw the color blocks
@@ -116,24 +113,36 @@ class InferGoogleVisionImageProperties(dataprocess.C2dImageTask):
             red = int(entry.color.red)
             green = int(entry.color.green)
             blue = int(entry.color.blue)
-            # alpha = int(entry.color.alpha)
-            print([red, green, blue, entry.pixel_fraction])
             color_rgb = (red, green, blue)
 
             # Calculate the width of the block based on pixel_fraction
-            block_width = int((entry.pixel_fraction / pixel_fraction_total) * total_width)
+            block_width = int((entry.pixel_fraction / pixel_fraction_total) * self.total_width)
             x1 = x0 + block_width
-            draw.rectangle([x0, 0, x1, image_height], fill=color_rgb)
+            draw.rectangle([x0, 0, x1, self.image_height], fill=color_rgb)
             x0 = x1
 
-        # Convert the rgb array
+        # Convert image to np array
         image_np = np.array(image)
 
-        # Display output
+        # Add image colormap to output 
         output = self.get_output(0)
         output.set_image(image_np)
 
+        # Add dict to output
         output_dict.data = ({'image_properties_annotation': f'{response.image_properties_annotation}'})
+
+        # Get box coordinates the analyzed area
+        vertices_data = response.crop_hints_annotation.crop_hints[0].bounding_poly.vertices
+        vertices = [(vertex.x,vertex.y) for vertex in vertices_data]
+        x_box = vertices[0][0]
+        y_box = vertices[0][1]
+        w = vertices[1][0] - x_box
+        h = vertices[2][0] - y_box
+
+        # Add selected area graphics to output
+        self.forward_input_image(0, 2)
+        output_box.add_object(0, 'selected area', 1.0, float(x_box), float(y_box), float(w), float(h), self.color)
+
         # Step progress bar (Ikomia Studio):
         self.emit_step_progress()
 
