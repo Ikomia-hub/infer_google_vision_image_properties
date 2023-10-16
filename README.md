@@ -21,7 +21,7 @@
 </p>
 
 
-Face detection using Google cloud vision API. 
+The Image Properties feature detects general attributes of the image, such as dominant color.
 
 **Running this algorithm requires**: 
 - **a Google Cloud Vision API Key**
