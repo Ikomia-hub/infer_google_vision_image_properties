@@ -165,9 +165,8 @@ class InferGoogleVisionImagePropertiesFactory(dataprocess.CTaskFactory):
         self.info.short_description = "Image Properties feature detects general attributes of the image, such as dominant color."
         # relative path -> as displayed in Ikomia Studio algorithm tree
         self.info.icon_path = "images/cloud.png"
-        self.info.path = "Plugins/Python/Detection"
+        self.info.path = "Plugins/Python/Other"
         self.info.version = "1.0.0"
-        # self.info.icon_path = "your path to a specific icon"
         self.info.authors = "Google"
         self.info.article = ""
         self.info.journal = ""
@@ -178,7 +177,7 @@ class InferGoogleVisionImagePropertiesFactory(dataprocess.CTaskFactory):
         # Code source repository
         self.info.repository = "https://github.com/googleapis/python-vision"
         # Keywords used for search
-        self.info.keywords = "Image proerties,Dominant color,Cloud,Vision AI"
+        self.info.keywords = "Image properties,Dominant color,Cloud,Vision AI"
         self.info.algo_type = core.AlgoType.INFER
         self.info.algo_tasks = "OTHER"
 
