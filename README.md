@@ -27,7 +27,7 @@ The Image Properties feature detects general attributes of the image, such as do
 - **a Google Cloud Vision API Key**
 - **a Google Cloud account with Cloud Vision API enable**
 
-**Pease refer to the 'Advanced Usage' section for guidance on how to set these up.**
+**Please refer to the 'Advanced Usage' section for guidance on how to set these up.**
 
 
 ![colormap bird](https://raw.githubusercontent.com/Ikomia-hub/infer_google_vision_image_properties/main/images/output.png)
@@ -57,7 +57,7 @@ algo = wf.add_task(name="infer_google_vision_image_properties", auto_connect=Tru
 
 # Set parameters
 algo.set_parameters({
-    'google_application_credentials':'PATH/TO/YOUR/GOOGLE/CLOUD/VISION/API/KEY.json '
+    'google_application_credentials':'PATH/TO/YOUR/GOOGLE/CLOUD/VISION/API/KEY.json'
 })
 
 # Run on your image
@@ -90,7 +90,7 @@ algo = wf.add_task(name="infer_google_vision_image_properties", auto_connect=Tru
 
 # Set parameters
 algo.set_parameters({
-    'google_application_credentials':'PATH/TO/YOUR/GOOGLE/CLOUD/VISION/API/KEY.json '
+    'google_application_credentials':'PATH/TO/YOUR/GOOGLE/CLOUD/VISION/API/KEY.json'
 })
 
 # Run on your image
