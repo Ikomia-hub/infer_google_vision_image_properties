@@ -28,8 +28,9 @@ class InferGoogleVisionImagePropertiesParam(core.CWorkflowTaskParam):
     def get_values(self):
         # Send parameters values to Ikomia Studio or API
         # Create the specific dict structure (string container)
-        params = {}
-        params["google_application_credentials"] = str(self.google_application_credentials)
+        params = {
+            "google_application_credentials": str(self.google_application_credentials)
+        }
         return params
 
 
@@ -42,10 +43,9 @@ class InferGoogleVisionImageProperties(dataprocess.C2dImageTask):
     def __init__(self, name, param):
         dataprocess.C2dImageTask.__init__(self, name)
         # Add input/output of the algorithm here
+        self.add_output(dataprocess.CImageIO())
         self.add_output(dataprocess.DataDictIO())
         self.add_output(dataprocess.CObjectDetectionIO())
-        self.add_output(dataprocess.CImageIO())
-
 
         # Create parameters object
         if param is None:
@@ -72,14 +72,13 @@ class InferGoogleVisionImageProperties(dataprocess.C2dImageTask):
         src_image = input.get_image()
 
         # Set output
-        output_dict = self.get_output(1)
-        output_box = self.get_output(2)
-        self.forward_input_image(0, 3)
-        output_box.init('img', 3)
+        output_dict = self.get_output(2)
+        output_box = self.get_output(3)
+        output_box.init('img', 1)
+        self.forward_input_image(0, 1)
 
         # Get parameters
         param = self.get_param_object()
-
 
         if self.client is None:
             if param.google_application_credentials:
@@ -87,7 +86,7 @@ class InferGoogleVisionImageProperties(dataprocess.C2dImageTask):
             self.client = vision.ImageAnnotatorClient()
 
         # Convert the NumPy array to a byte stream
-        src_image = src_image[..., ::-1] # Convert to bgr
+        src_image = src_image[..., ::-1]  # Convert to bgr
         is_success, image_buffer = cv2.imencode(".jpg", src_image)
         byte_stream = io.BytesIO(image_buffer)
 
@@ -99,14 +98,14 @@ class InferGoogleVisionImageProperties(dataprocess.C2dImageTask):
 
         # Inference
         response = self.client.image_properties(image=image)
-        props  = response.image_properties_annotation
+        props = response.image_properties_annotation
         color_data = props.dominant_colors.colors
 
         # Create a blank image
         image = Image.new("RGB", (self.total_width, self.image_height))
         draw = ImageDraw.Draw(image)
 
-        # The total pixel_fraction is not always 1. So it will be normalize
+        # The total pixel_fraction is not always 1. So it will be normalized
         pixel_fraction_total = sum(entry.pixel_fraction for entry in color_data)
 
         # Draw the color blocks
@@ -136,7 +135,7 @@ class InferGoogleVisionImageProperties(dataprocess.C2dImageTask):
 
         # Get box coordinates the analyzed area
         vertices_data = response.crop_hints_annotation.crop_hints[0].bounding_poly.vertices
-        vertices = [(vertex.x,vertex.y) for vertex in vertices_data]
+        vertices = [(vertex.x, vertex.y) for vertex in vertices_data]
         x_box = vertices[0][0]
         y_box = vertices[0][1]
         w = vertices[1][0] - x_box
